@@ -1,6 +1,11 @@
-#!/bin/bash#!/bin/bash
+#!/bin/bash
 
-export WHITE=0xffCAD3F5
+# -- Tokyo Night (night), matching borders, tmux and nvim --
+export WHITE=0xffc0caf5
+export BAR_COLOR=0xff1a1b26
+export ITEM_BG_COLOR=0xffa9b1d6
+export ACCENT_COLOR=0xff7aa2f7
+export BORDER_COLOR=0xff414868
 
 # -- Teal Scheme --
 # export BAR_COLOR=0xff001f30
@@ -12,11 +17,11 @@ export WHITE=0xffCAD3F5
 # export ITEM_BG_COLOR=0xff353c3f
 # export ACCENT_COLOR=0xffcad3f5
 #
-# # -- Purple Scheme --
-export BAR_COLOR=0xff282828
-export ITEM_BG_COLOR=0xffa8a8a8
-export ACCENT_COLOR=0xfff0f0f0
-export BORDER_COLOR=0xff606060
+# # -- Gray Scheme (was active before Tokyo Night) --
+# export BAR_COLOR=0xff282828
+# export ITEM_BG_COLOR=0xffa8a8a8
+# export ACCENT_COLOR=0xfff0f0f0
+# export BORDER_COLOR=0xff606060
 #
 # # -- Red Scheme ---
 # # export BAR_COLOR=0xff23090e

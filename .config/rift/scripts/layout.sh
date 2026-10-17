@@ -5,8 +5,8 @@
 #   layout.sh save      remember the current arrangement (Alt+Shift+S)
 #   layout.sh restore   put every monitor's windows back into the saved arrangement (Alt+Shift+R)
 #   layout.sh check     list windows that are on the wrong monitor, change nothing
-#   layout.sh place     (run by Rift on windows_changed) move a window that lands in a
-#                       workspace on the wrong monitor to the monitor that workspace lives on
+#   layout.sh place     (run by Rift on windows_changed) move a newly opened window that lands
+#                       in a workspace on the wrong monitor to the monitor that workspace lives on
 #
 # Which app opens in which workspace is set by app_rules in config.toml; Rift can't pick
 # the monitor there, which is what `place` adds.
@@ -16,6 +16,10 @@ PATH="/opt/homebrew/bin:/usr/bin:/bin:$PATH"
 DIR="$HOME/.config/rift/layouts"
 SNAPSHOT="$DIR/home.ron"
 HOMES="$DIR/workspace-homes.tsv"   # "<workspace index>\t<display uuid>\t<display name>"
+
+# `display move-window --uuid` does nothing in Rift 0.7.0 (it reports success); `--index` works,
+# so look up the display's position in `rift-cli query displays`
+display_index() { rift-cli query displays | jq -r --arg u "$1" 'map(.uuid) | index($u)'; }
 
 focused_display() { rift-cli query displays | jq -r '.[] | select(.is_active_context) | .uuid'; }
 
@@ -47,7 +51,7 @@ restore() {
 # Move one window ("<pid> <idx>") into workspace <index> on display <uuid>
 move_home() {
   local pid="$1" idx="$2" index="$3" home="$4"
-  rift-cli execute display move-window --uuid "$home" --window-id "$idx" >/dev/null
+  rift-cli execute display move-window --index "$(display_index "$home")" --window-id "$idx" >/dev/null
   local active
   active=$(rift-cli query workspaces --display "$home" | jq -r '.[] | select(.is_active) | .index')
   if [ "$active" != "$index" ]; then
@@ -75,9 +79,26 @@ misplaced() {
   return 0
 }
 
+# Windows seen by the last `place` run ("<pid>\t<idx>" per line)
+KNOWN="${TMPDIR:-/tmp}/rift-layout-known-windows"
+
+all_windows() {
+  for uuid in $(rift-cli query displays | jq -r '.[].uuid'); do
+    rift-cli query workspaces --display "$uuid" | jq -r '.[].windows[] | "\(.id.pid)\t\(.id.idx)"'
+  done | sort -u
+}
+
+# $1 = "new": only windows that weren't there last time, so a window or workspace you move
+# to another monitor on purpose isn't dragged back
 place_all() {
   local moves focused
   moves=$(misplaced)
+  if [ "$1" = "new" ]; then
+    local now
+    now=$(all_windows)
+    [ -f "$KNOWN" ] && moves=$(awk -F'\t' 'NR == FNR { seen[$1 FS $2]; next } !(($1 FS $2) in seen)' "$KNOWN" - <<<"$moves")
+    printf '%s\n' "$now" > "$KNOWN"
+  fi
   [ -n "$moves" ] || return 0
   focused=$(focused_display)
   while IFS=$'\t' read -r pid idx index home; do
@@ -95,7 +116,7 @@ place() {
     rm -rf "$lock"; mkdir "$lock" 2>/dev/null || exit 0
   fi
   trap 'rm -rf "$lock"' EXIT
-  place_all
+  place_all new
 }
 
 case "$1" in

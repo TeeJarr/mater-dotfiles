@@ -1,0 +1,36 @@
+#!/bin/bash
+# Pick a project with fzf and open it in its own tmux session, or jump to that session if it's
+# already running. Works from a plain terminal (Ctrl+F in zsh) and inside tmux (prefix + f).
+#
+#   tmux-sessionizer          choose from ~/Documents/GitHub, ~/.config and zoxide's directories
+#   tmux-sessionizer <dir>    open <dir> directly
+set -euo pipefail
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
+
+candidates() {
+	find "$HOME/Documents/GitHub" "$HOME/.config" -mindepth 1 -maxdepth 1 -type d -not -name '.*' 2>/dev/null
+	zoxide query -l 2>/dev/null || true
+}
+
+if [ $# -gt 0 ]; then
+	dir=$(cd "$1" && pwd)
+else
+	# Show ~ instead of the home path, without duplicates, existing directories only
+	pick=$(candidates | awk '!seen[$0]++' | while read -r d; do [ -d "$d" ] && echo "${d/#$HOME/~}"; done \
+		| fzf --reverse --prompt 'project> ' --preview 'eval eza -1 --icons --group-directories-first {}' \
+			--preview-window 'right,40%' --bind 'ctrl-/:toggle-preview') || exit 0
+	dir="${pick/#\~/$HOME}"
+fi
+
+# tmux session names can't contain . or :
+name=$(basename "$dir" | tr '.:' '__')
+
+if ! tmux has-session -t "=$name" 2>/dev/null; then
+	tmux new-session -d -s "$name" -c "$dir"
+fi
+
+if [ -n "${TMUX:-}" ]; then
+	tmux switch-client -t "=$name"
+else
+	tmux attach-session -t "=$name"
+fi

@@ -13,6 +13,19 @@
 !/bootstrap.sh
 !/README.md
 
+# Only these scripts from ~/.local/bin (other tools install themselves there too)
+!/.local/
+/.local/*
+!/.local/bin/
+/.local/bin/*
+!/.local/bin/wallpaper
+!/.local/bin/tmux-sessionizer
+
+# The tmux theme .tmux.conf sources (plugins are installed by tpm)
+!/.tmux/
+/.tmux/*
+!/.tmux/tokyonight.conf
+
 !/.config/
 /.config/*
 !/.config/aerospace/
@@ -25,6 +38,7 @@
 !/.config/htop/
 !/.config/karabiner/
 !/.config/kitty/
+!/.config/lazygit/
 !/.config/neovide/
 !/.config/nvim/
 !/.config/rift/

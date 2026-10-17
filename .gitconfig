@@ -1,6 +1,9 @@
 [user]
 	name = TeeJarr
 	email = tjreyn03@gmail.com
+# Centability work (BudgetApp) uses the work identity, kept out of this public repo
+[includeIf "gitdir:~/Documents/GitHub/"]
+	path = ~/.gitconfig-work
 [init]
 	defaultBranch = main
 [core]

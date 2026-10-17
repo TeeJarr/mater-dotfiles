@@ -1,0 +1,16 @@
+#!/bin/bash
+# Set a random wallpaper from ~/cool-wallpapers/<theme> on every monitor.
+# Usage: wallpaper [theme]   (default: tokyonight)
+set -euo pipefail
+
+dir="$HOME/cool-wallpapers/${1:-tokyonight}"
+current=$(osascript -e 'tell application "Finder" to get POSIX path of (desktop picture as alias)' 2>/dev/null || true)
+
+# Pick a random image, skipping the one already shown when there is a choice
+pick=$(find "$dir" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) \
+	| grep -vxF "$current" | sort -R | head -1)
+[ -n "$pick" ] || pick="$current"
+[ -n "$pick" ] || { echo "wallpaper: no images in $dir" >&2; exit 1; }
+
+osascript -e "tell application \"System Events\" to tell every desktop to set picture to POSIX file \"$pick\""
+echo "$pick"

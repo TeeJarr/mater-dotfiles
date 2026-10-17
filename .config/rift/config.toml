@@ -13,27 +13,34 @@ default_disable = false
 
 # AeroSpace moved the mouse to the newly focused monitor; Rift can only move it on every
 # focus change. Focus doesn't follow the mouse (AeroSpace has no such feature).
-focus_follows_mouse = true
+focus_follows_mouse = false
 mouse_follows_focus = true
 mouse_hides_on_focus = true
 
 # Commands to run when Rift starts. When a window lands in a workspace on the wrong monitor
 # (app_rules can't pick one), move it to the monitor that workspace lives on
 # (~/.config/rift/layouts/workspace-homes.tsv, written by Alt+Shift+S).
-# Restart the service (`rift service restart`) after changing these; reloads don't rerun them.
+# Restart the service (`brew services restart rift`) after changing these; reloads don't rerun them.
 # Rift rebuilds stacks and window order its own way when it restarts, so the saved layout
 # is also reapplied a few seconds after startup (the same as pressing Alt+Shift+R).
+# Workspace numbers are shared by all monitors: unique-workspaces.sh moves any monitor showing an
+# empty duplicate of a number in use elsewhere (every monitor starts on "1") to a free number.
 run_on_start = [
-  "rift-cli subscribe cli --event windows_changed --command /Users/tristan/.config/rift/scripts/layout.sh --args place",
-  "sh -c 'sleep 3; /Users/tristan/.config/rift/scripts/layout.sh restore'",
+  "rift-cli subscribe cli --event windows_changed --command /Users/tristanreynolds/.config/rift/scripts/layout.sh --args place",
+  "rift-cli subscribe cli --event workspace_changed --command /Users/tristanreynolds/.config/rift/scripts/unique-workspaces.sh",
+  "sh -c 'sleep 3; /Users/tristanreynolds/.config/rift/scripts/layout.sh restore; /Users/tristanreynolds/.config/rift/scripts/unique-workspaces.sh'",
 ]
 
 hot_reload = true
 
 [settings.layout]
-# i3-style containers, the closest match to AeroSpace's tiles
+# i3-style containers: they support stacks (Alt+S/Alt+W), which bsp (Hyprland's dwindle)
+# doesn't in Rift 0.7.0. Splits don't alternate on their own; Alt+E flips the direction
 mode = "traditional"
 window_insertion_point = "next_to_selection"
+
+[settings.gestures]
+enabled = true
 
 [settings.layout.traditional]
 # Comparable to AeroSpace's normalizations
@@ -45,6 +52,11 @@ equalize_nodes = true
 stack_offset = 0.0
 # Always stack vertically so the tab bar is on the left (horizontal stacks put it on top)
 default_orientation = "vertical"
+
+[settings.layout.scrolling]
+
+[settings.layout.scrolling.gestures]
+enabled = true
 
 [settings.ui.stack_line]
 enabled = true
@@ -103,6 +115,13 @@ workspace_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
 workspace_rules = []
 
 app_rules = [
+  # Float what macOS marks as dialogs and panels in every app, like Hyprland floats dialogs.
+  # Listed first so they win against the app_id rules below (equally specific, earlier wins),
+  # which also means a dialog opens on the workspace you're on rather than its app's
+  { ax_subrole = "AXDialog", floating = true },
+  { ax_subrole = "AXSystemDialog", floating = true },
+  { ax_subrole = "AXFloatingWindow", floating = true },
+
   # Float IntelliJ dialogs so they don't steal focus from their popups
   { app_id = "com.jetbrains.intellij", title_regex = "(Run/Debug|Configurations|Parameters|Arguments|Settings|Preferences|Environment Variables)", floating = true },
   { app_id = "app.zen-browser.zen", title_substring = "Picture-in-Picture", floating = true },
@@ -150,32 +169,32 @@ comb1 = "Alt + Shift"
 
 # Workspaces 1-12 (Rift counts from 0). Like i3/AeroSpace, a workspace shown on another
 # monitor is focused there instead of opening on this one (scripts/focus-workspace.sh)
-"Alt + 1" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "0"] }
-"Alt + 2" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "1"] }
-"Alt + 3" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "2"] }
-"Alt + 4" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "3"] }
-"Alt + 5" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "4"] }
-"Alt + 6" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "5"] }
-"Alt + 7" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "6"] }
-"Alt + 8" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "7"] }
-"Alt + 9" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "8"] }
-"Alt + 0" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "9"] }
-"Alt + Tab" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "10"] }
-"Alt + Backquote" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "11"] }
+"Alt + 1" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "0"] }
+"Alt + 2" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "1"] }
+"Alt + 3" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "2"] }
+"Alt + 4" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "3"] }
+"Alt + 5" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "4"] }
+"Alt + 6" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "5"] }
+"Alt + 7" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "6"] }
+"Alt + 8" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "7"] }
+"Alt + 9" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "8"] }
+"Alt + 0" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "9"] }
+"Alt + Tab" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "10"] }
+"Alt + Backquote" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "11"] }
 
-# Move the window without following it, like move-node-to-workspace
-"comb1 + 1" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "0"] }
-"comb1 + 2" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "1"] }
-"comb1 + 3" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "2"] }
-"comb1 + 4" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "3"] }
-"comb1 + 5" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "4"] }
-"comb1 + 6" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "5"] }
-"comb1 + 7" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "6"] }
-"comb1 + 8" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "7"] }
-"comb1 + 9" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "8"] }
-"comb1 + 0" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "9"] }
-"comb1 + Tab" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "10"] }
-"comb1 + Backquote" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "11"] }
+# Move the window and follow it there, like Hyprland's movetoworkspace
+"comb1 + 1" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "0"] }
+"comb1 + 2" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "1"] }
+"comb1 + 3" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "2"] }
+"comb1 + 4" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "3"] }
+"comb1 + 5" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "4"] }
+"comb1 + 6" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "5"] }
+"comb1 + 7" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "6"] }
+"comb1 + 8" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "7"] }
+"comb1 + 9" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "8"] }
+"comb1 + 0" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "9"] }
+"comb1 + Tab" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "10"] }
+"comb1 + Backquote" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/focus-workspace.sh", "--move", "11"] }
 
 # Move the workspace to a display (AeroSpace monitors 1/2/3 are Rift displays 0/1/2)
 "Alt + P" = { move_workspace_to_display = { selector = 1 } }
@@ -188,10 +207,10 @@ comb1 = "Alt + Shift"
 
 "Meta + Shift + R" = { exec = ["/bin/bash", "-c", "brew services restart borders"] }
 # New random Tokyo Night wallpaper on every monitor (~/.local/bin/wallpaper)
-"comb1 + W" = { exec = ["/Users/tristan/.local/bin/wallpaper", "tokyonight"] }
+"comb1 + W" = { exec = ["/Users/tristanreynolds/.local/bin/wallpaper", "tokyonight"] }
 # Save the current arrangement / put every window back into it (scripts/layout.sh)
-"comb1 + S" = { exec = ["/Users/tristan/.config/rift/scripts/layout.sh", "save"] }
-"comb1 + R" = { exec = ["/Users/tristan/.config/rift/scripts/layout.sh", "restore"] }
+"comb1 + S" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/layout.sh", "save"] }
+"comb1 + R" = { exec = ["/Users/tristanreynolds/.config/rift/scripts/layout.sh", "restore"] }
 
 # Binding modes must come after every [keys] entry (TOML scoping)
 [binding_modes.resize]

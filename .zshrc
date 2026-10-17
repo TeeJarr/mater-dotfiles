@@ -1,134 +1,89 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+# Plain zsh, no framework: Starship draws the prompt, Homebrew supplies the plugins.
 
-# Path to your Oh My Zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time Oh My Zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME=""  # Starship draws the prompt (end of file)
-
-# Set list of themes to pick from when loading at random
-# Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in $ZSH/themes/
-# If set to an empty array, this variable will have no effect.
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
-
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
-
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
-
-# Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
-
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# You can also set it to another string to have that shown instead of the default red dots.
-# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(
-	git
-	zsh-syntax-highlighting
-	zsh-autosuggestions
-	zsh-interactive-cd
-	)
-
-source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
 export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='nvim'
-# fi
-
 export EDITOR='nvim'
 
-# Compilation flags
-# export ARCHFLAGS="-arch $(uname -m)"
+# ---- PATH (first match wins; -U drops duplicates) ----
+typeset -U path
+path=(
+	/opt/homebrew/opt/ruby/bin
+	/opt/homebrew/opt/postgresql@16/bin
+	"$HOME/Library/Application Support/pypoetry/venv/bin"
+	$HOME/.local/bin
+	$HOME/bin
+	/opt/homebrew/bin
+	$path
+	$HOME/.bin
+)
 
-# Set personal aliases, overriding those provided by Oh My Zsh libs,
-# plugins, and themes. Aliases can be placed here, though Oh My Zsh
-# users are encouraged to define aliases within a top-level file in
-# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
-# - $ZSH_CUSTOM/aliases.zsh
-# - $ZSH_CUSTOM/macos.zsh
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+# ---- History ----
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt extended_history share_history hist_ignore_dups hist_ignore_space hist_verify
 
-export PATH=$HOME/bin:$PATH
-export PATH=$PATH:~/.bin/
-export PATH="/opt/homebrew/bin:$PATH"
-export PATH="/Users/tristan/.local/bin:$PATH"
-export PATH="/opt/homebrew/Cellar:$PATH"
+# ---- Directories ----
+setopt auto_cd auto_pushd pushd_ignore_dups pushd_minus
+alias -- -='cd -'
+alias ..='cd ..'
+alias ...='cd ../..'
 
+# ---- Completion (the dump is rebuilt at most once a day) ----
+fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+autoload -Uz compinit
+() {
+	setopt local_options extended_glob
+	if [[ -n ~/.zcompdump(#qN.mh+24) || ! -f ~/.zcompdump ]]; then
+		compinit
+	else
+		compinit -C
+	fi
+}
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+setopt complete_in_word always_to_end
+
+# ---- Keys: emacs mode; Up/Down search history by what's already typed ----
+bindkey -e
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
+bindkey '^[OA' up-line-or-beginning-search
+bindkey '^[OB' down-line-or-beginning-search
+
+# ---- Aliases ----
 alias c=clear
 alias y=yazi
 alias ls="eza --all --group-directories-last -h --icons --color=auto -G -l -h -B --no-permissions --no-user --no-time"
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/Library/Application Support/pypoetry/venv/bin:$PATH"
-export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
-
-# ---- Zoxide (better cd) ----
-eval "$(zoxide init zsh)"
-# alias cd=z
-
 alias zen-debug='open -a "Zen" --args --start-debugger-server 9222'
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+alias g=git
+alias gst='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gco='git checkout'
+alias gsw='git switch'
+alias gd='git diff'
+alias gl='git pull'
+alias gp='git push'
+alias glog='git log --oneline --decorate --graph'
+
+# ---- Tools ----
+# Tokyo Night (night) colours for fzf, and lazygit's config kept with the other dotfiles
+export FZF_DEFAULT_OPTS="--highlight-line --info=inline-right --layout=reverse --border=none \
+  --color=bg+:#283457,bg:#16161e,border:#27a1b9,fg:#c0caf5,gutter:#16161e,header:#ff9e64 \
+  --color=hl+:#2ac3de,hl:#2ac3de,info:#545c7e,marker:#ff007c,pointer:#ff007c,prompt:#2ac3de \
+  --color=query:#c0caf5:regular,scrollbar:#27a1b9,separator:#ff9e64,spinner:#ff007c"
+export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
+eval "$(zoxide init zsh)"
+# Ctrl+T files, Ctrl+R history, Alt+C cd into a directory
+source <(fzf --zsh)
+# Ctrl+F: pick a project and open it in its own tmux session (~/.local/bin/tmux-sessionizer)
+bindkey -s '^f' 'tmux-sessionizer\n'
+
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # ---- Starship prompt (Tokyo Night preset) ----
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
@@ -136,3 +91,6 @@ eval "$(starship init zsh)"
 
 # Machine-only settings (work aliases, secrets) stay out of the repo
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
+# Syntax highlighting has to load last
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

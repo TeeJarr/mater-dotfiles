@@ -2,7 +2,7 @@
 # i3 / AeroSpace-style workspaces across monitors.
 #
 #   focus-workspace.sh <index>          go to workspace <index> (0-based)
-#   focus-workspace.sh --move <index>   send the focused window there, staying put
+#   focus-workspace.sh --move <index>   send the focused window there and follow it
 #
 # Rift keeps a separate set of workspaces on every display. This treats each workspace
 # number as living on one monitor: the monitor showing it, otherwise the monitor where it
@@ -10,6 +10,10 @@
 # instead of switching the monitor you're on.
 
 PATH="/opt/homebrew/bin:/usr/bin:/bin:$PATH"
+
+# `display move-window --uuid` does nothing in Rift 0.7.0 (it reports success); `--index` works,
+# so look up the display's position in `rift-cli query displays`
+display_index() { rift-cli query displays | jq -r --arg u "$1" 'map(.uuid) | index($u)'; }
 
 move=false
 if [ "$1" = "--move" ]; then
@@ -42,13 +46,25 @@ if [ -z "$owner" ]; then
 fi
 
 if $move; then
-  if [ "$owner" != "$focused" ] && $visible; then
-    # Shown on another monitor: put the window there, keep focus here
-    rift-cli execute display move-window --uuid "$owner" >/dev/null
-    rift-cli execute display focus --uuid "$focused" >/dev/null
+  window=$(rift-cli query windows | jq -c '.[] | select(.is_focused) | {pid: .id.pid, idx: .id.idx}')
+  [ -n "$window" ] || exit 0
+  if [ "$owner" != "$focused" ]; then
+    # The workspace lives on another monitor: put the window there and follow it, so the
+    # number never holds windows on two monitors
+    rift-cli execute display move-window --index "$(display_index "$owner")" --window-id "$(jq -r .idx <<<"$window")" >/dev/null
+    rift-cli execute display focus --uuid "$owner" >/dev/null
+    if ! $visible; then
+      # It landed in whatever that monitor shows; send it on to its workspace
+      rift-cli execute window focus --window-id "$window" >/dev/null
+      rift-cli execute workspace move-window "$target" >/dev/null
+      rift-cli execute workspace switch "$target" >/dev/null
+    fi
   else
     rift-cli execute workspace move-window "$target" >/dev/null
+    rift-cli execute workspace switch "$target" >/dev/null
   fi
+  # Workspaces remember their own focus, so focus the moved window explicitly
+  rift-cli execute window focus --window-id "$window" >/dev/null
   exit 0
 fi
 

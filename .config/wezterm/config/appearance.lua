@@ -11,7 +11,9 @@ return {
    webgpu_preferred_adapter = gpu_adapters:pick_best(),
 
    -- color scheme
-   colors = tundra,
+   -- Tokyo Night (night), matching kitty, tmux and nvim
+   color_scheme = 'Tokyo Night',
+   -- colors = tundra,
    -- color_scheme = "Catppuccin Mocha",
    -- color_scheme = 'Everforest Dark (Gogh)',
    -- color_scheme = tundra,

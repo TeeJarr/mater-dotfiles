@@ -55,25 +55,19 @@ fi
 eval "$(/opt/homebrew/bin/brew shellenv)"
 brew bundle --file="$HOME/Brewfile" || echo "Some Brewfile entries failed; see above and rerun 'brew bundle'"
 
-step "Oh My Zsh and plugins"
-[ -d "$HOME/.oh-my-zsh" ] || RUNZSH=no KEEP_ZSHRC=yes \
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-ZSH_CUSTOM="$HOME/.oh-my-zsh/custom/plugins"
-[ -d "$ZSH_CUSTOM/zsh-autosuggestions" ] || git clone -q https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/zsh-autosuggestions"
-[ -d "$ZSH_CUSTOM/zsh-syntax-highlighting" ] || git clone -q https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/zsh-syntax-highlighting"
-
 step "tmux plugin manager"
 [ -d "$HOME/.tmux/plugins/tpm" ] || git clone -q https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
 step "Services"
 brew services start sketchybar >/dev/null 2>&1 || true
 brew services start borders >/dev/null 2>&1 || true
-rift service install >/dev/null 2>&1 && rift service start >/dev/null 2>&1 || true
+brew services start rift >/dev/null 2>&1 || true
 
 cat <<'EOF'
 
 Done. Still to do by hand:
   - gh auth login                      (GitHub sign-in; also used by git)
+  - ~/.gitconfig-work: [user] name and email for work repos under ~/Documents/GitHub
   - SSH key: ssh-keygen -t ed25519, then gh ssh-key add ~/.ssh/id_ed25519.pub
   - Grant Accessibility to Rift, Karabiner, Raycast and BetterDisplay in System Settings
   - Raycast: import the .rayconfig exported from the old Mac
