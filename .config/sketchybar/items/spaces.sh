@@ -8,11 +8,11 @@ for sid in $(aerospace list-workspaces --monitor 1 --empty no); do
 	sketchybar --add item space.$sid left \
 						 --subscribe space.$sid aerospace_workspace_change \
 						 --set space.$sid \
-						 background.color=0x44ffffff \
-             icon.font="sketchybar-app-font:Regular:16.0" \
+						 background.color=0xffebdbb2 \
+             icon.font="sketchybar-app-font:Regular:14.0" \
 						 background.corner_radius=5 \
 						 background.height=20 \
-						 background.drawing=on \
+						 background.drawing=off \
 						 label="$sid"\
 						 click_script="aerospace worskspace $sid" \
 						 script="$CONFIG_DIR/plugins/space.sh $sid"

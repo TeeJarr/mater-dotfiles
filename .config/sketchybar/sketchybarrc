@@ -10,16 +10,16 @@ source "$CONFIG_DIR/colors.sh"
 sketchybar --bar display=main
 
 sketchybar --bar position=top 			\
-						y_offset=5 							\
-						height=40								\
-						corner_radius=30				\
-						blur_radius=0 					\
-						padding_right=20				\
-						padding_left=20 				\
+						y_offset=0 						\
+						height=35								\
+						border_width=2          \
+						border_color=$BORDER_COLOR			\
+						padding_right=10				\
+						padding_left=10				\
 						sticky=on		 						\
-						shadow=on								\
+						# shadow=on								\
 
-sketchybar --bar color=0x00000000
+sketchybar --bar color=$BAR_COLOR
 
 
 ##### Changing Defaults #####
@@ -28,14 +28,14 @@ sketchybar --bar color=0x00000000
 default=(
   padding_left=2	
   padding_right=1
-  icon.font="SF Pro:Semibold:15.0"
+  icon.font="SF Pro:Semibold:14.0"
   label.font="SF Pro:Semibold:14.0"
-	background.color=$ITEM_BG_COLOR
-	background.corner_radius=25
-	background.height=20
-	background.drawing=off
-  icon.color=$WHITE
-  label.color=$WHITE
+	# background.color=$ITEM_BG_COLOR
+	# background.corner_radius=25
+	# background.height=20
+	# background.drawing=on
+  icon.color=0xfff0f0f0
+  label.color=$ITEM_BG_COLOR
   icon.padding_left=10
   icon.padding_right=4
   label.padding_left=4
@@ -56,29 +56,29 @@ source "$ITEM_DIR/cpu.sh"
 source "$ITEM_DIR/media.sh"
 
 # source "$CONFIG_DIR/split.sh"
-ITEMS=$(sketchybar --query bar | jq -r '.items | .[]')
-
-LEFT_ITEMS=()
-RIGHT_ITEMS=()
-for item in $ITEMS
-do
-  POS=$(sketchybar --query ${item} | jq -r '.geometry.position')
-  if [ "$POS" = "left" ]; then
-    LEFT_ITEMS+=(${item})
-  elif [ "$POS" = "right" ]; then
-    RIGHT_ITEMS+=(${item})
-  fi
-done
-
-sketchybar --add bracket left_items ${LEFT_ITEMS[@]} \
-           --set left_items background.color=$BAR_COLOR \
-                            background.height=39 \
-														background.padding_left=30 \
-
-sketchybar --add bracket right_items ${RIGHT_ITEMS[@]} \
-           --set right_items background.color=$BAR_COLOR \
-                             background.height=39 \
-														background.padding_right=10 \
+# ITEMS=$(sketchybar --query bar | jq -r '.items | .[]')
+#
+# LEFT_ITEMS=()
+# RIGHT_ITEMS=()
+# for item in $ITEMS
+# do
+#   POS=$(sketchybar --query ${item} | jq -r '.geometry.position')
+#   if [ "$POS" = "left" ]; then
+#     LEFT_ITEMS+=(${item})
+#   elif [ "$POS" = "right" ]; then
+#     RIGHT_ITEMS+=(${item})
+#   fi
+# done
+#
+# sketchybar --add bracket left_items ${LEFT_ITEMS[@]} \
+#            --set left_items background.color=$BAR_COLOR \
+#                             background.height=39 \
+# 														background.padding_left=30 \
+#
+# sketchybar --add bracket right_items ${RIGHT_ITEMS[@]} \
+#            --set right_items background.color=$BAR_COLOR \
+#                              background.height=39 \
+# 														background.padding_right=10 \
 
 sketchybar --update
 

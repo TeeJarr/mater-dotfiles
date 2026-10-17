@@ -1,0 +1,42 @@
+# The repo's work tree is $HOME, so ignore everything and list what's tracked.
+# Add a new config with `git add -f <path>` or a `!` line below.
+/*
+!/.gitignore
+!/.gitmodules
+!/.gitconfig
+!/.zshrc
+!/.zprofile
+!/.tmux.conf
+!/.ideavimrc
+!/.clang-format
+!/Brewfile
+!/bootstrap.sh
+!/README.md
+
+!/.config/
+/.config/*
+!/.config/aerospace/
+!/.config/alacritty/
+!/.config/borders/
+!/.config/btop/
+!/.config/cava/
+!/.config/fastfetch/
+!/.config/ghostty/
+!/.config/htop/
+!/.config/karabiner/
+!/.config/kitty/
+!/.config/neovide/
+!/.config/nvim/
+!/.config/rift/
+!/.config/sketchybar/
+!/.config/starship/
+!/.config/wezterm/
+!/.config/yazi/
+!/.config/zed/
+
+# Machine-specific or generated
+/.config/rift/layouts/
+/.config/wezterm/backdrops/
+/.config/karabiner/automatic_backups/
+.DS_Store
+*.bak

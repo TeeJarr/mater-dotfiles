@@ -6,7 +6,7 @@
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 after-startup-command = [
-  'exec-and-forget borders'
+  # 'exec-and-forget borders',
 ]
 exec-on-workspace-change = ['/bin/bash', '-c',
     'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE'
@@ -14,13 +14,16 @@ exec-on-workspace-change = ['/bin/bash', '-c',
 # Mouse follows focus when focused monitor changes
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
+# Startup setitngs
+start-at-login = true
+
 [gaps]
     inner.horizontal = [{monitor."LS32D70xE" = 15},15]
     inner.vertical =   [{monitor."LS32D70xE" = 15},15]
-    outer.left =       [{monitor."LS32D70xE" = 20},20]
+    outer.left =       [{monitor."LS32D70xE" = 20},15]
     outer.bottom =     [{monitor."LS32D70xE" = 20},{monitor."VX2758-Series" = 20},15]
-    outer.top =        [{monitor."LS32D70xE" = 55},{monitor."S2725QC" = 55},{monitor."VX2758-Series" = 55},17]	
-    outer.right =      [{monitor."LS32D70xE" = 20},20]
+    outer.top =        [{monitor."LS32D70xE" = 5},{monitor."U2718Q" = 5},{monitor."S2725QC" = 5},{monitor."VX2758-Series" = 5}, 10]
+    outer.right =      [{monitor."LS32D70xE" = 20},15]
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -79,6 +82,7 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     alt-9 = 'workspace 9'
     alt-0 = 'workspace 10'
 		alt-tab = 'workspace 11	'
+		alt-backtick = 'workspace 12'
 		alt-p='move-workspace-to-monitor 2'
 
     alt-shift-1 = 'move-node-to-workspace 1'
@@ -92,18 +96,32 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
     alt-shift-9 = 'move-node-to-workspace 9'
     alt-shift-0 = 'move-node-to-workspace 10'
 		alt-shift-tab = 'move-node-to-workspace 11'
+		alt-shift-backtick = 'move-node-to-workspace 12'
 		alt-shift-p= 'move-workspace-to-monitor 1'
+		alt-cmd-p= 'move-workspace-to-monitor 3'
 
     alt-shift-c = 'reload-config'
     alt-z = 'mode resize'
 		alt-shift-z = 'mode linux'
 		cmd-shift-esc = 'exec-and-forget sketchybar --reload'
+		cmd-shift-r = 'exec-and-forget brew services restart borders'
+
+# Float IntelliJ dialogs so AeroSpace doesn't steal focus from their popups
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.intellij'
+if.window-title-regex-substring = '(Run/Debug|Configurations|Parameters|Arguments|Settings|Preferences|Environment Variables)'
+run = ['layout floating']
 
 [[on-window-detected]]
 if.app-id = 'org.zen-browser.zen'
 if.window-title-regex-substring = 'Picture-in-Picture'
 run = [ 'layout floating' ]
 check-further-callbacks = true
+
+[[on-window-detected]]
+if.app-id = '15500'
+run = [ 'layout floating' ]
+
 
 [mode.linux.binding]
 		cmd-shift-alt-enter = 'mode main'
@@ -119,4 +137,3 @@ check-further-callbacks = true
 		alt-shift-j = 'join-with down'
 		alt-shift-k = 'join-with up'
 		alt-shift-l = 'join-with right'
-

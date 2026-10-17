@@ -1,0 +1,211 @@
+# Rift config modelled on ~/.config/aerospace/aerospace.toml (written for Rift v0.7.0).
+# Reference: https://acsandmann.github.io/rift-docs/reference/configuration/
+
+[settings]
+animate = true
+animation_duration = 0.2
+animation_fps = 120.0
+animation_easing = "ease_out_cubic"
+
+# Tile every Space automatically, like AeroSpace (Rift's default waits for Alt+Z per Space,
+# which would also clash with the resize mode on Alt+Z)
+default_disable = false
+
+# AeroSpace moved the mouse to the newly focused monitor; Rift can only move it on every
+# focus change. Focus doesn't follow the mouse (AeroSpace has no such feature).
+focus_follows_mouse = true
+mouse_follows_focus = true
+mouse_hides_on_focus = true
+
+# Commands to run when Rift starts. When a window lands in a workspace on the wrong monitor
+# (app_rules can't pick one), move it to the monitor that workspace lives on
+# (~/.config/rift/layouts/workspace-homes.tsv, written by Alt+Shift+S).
+# Restart the service (`rift service restart`) after changing these; reloads don't rerun them.
+# Rift rebuilds stacks and window order its own way when it restarts, so the saved layout
+# is also reapplied a few seconds after startup (the same as pressing Alt+Shift+R).
+run_on_start = [
+  "rift-cli subscribe cli --event windows_changed --command /Users/tristan/.config/rift/scripts/layout.sh --args place",
+  "sh -c 'sleep 3; /Users/tristan/.config/rift/scripts/layout.sh restore'",
+]
+
+hot_reload = true
+
+[settings.layout]
+# i3-style containers, the closest match to AeroSpace's tiles
+mode = "traditional"
+window_insertion_point = "next_to_selection"
+
+[settings.layout.traditional]
+# Comparable to AeroSpace's normalizations
+equalize_nodes = true
+
+[settings.layout.stack]
+# Stacked windows sit exactly on top of each other and fill the whole tile; the tab bar
+# beside them shows how many there are instead of offset edges peeking out
+stack_offset = 0.0
+# Always stack vertically so the tab bar is on the left (horizontal stacks put it on top)
+default_orientation = "vertical"
+
+[settings.ui.stack_line]
+enabled = true
+vert_placement = "left"
+# Clicking a tab focuses that window; "hover" only highlights it
+hover = "hover"
+
+[settings.layout.gaps.outer]
+top = 10
+left = 15
+bottom = 15
+right = 15
+
+[settings.layout.gaps.inner]
+horizontal = 15
+vertical = 15
+
+# AeroSpace used outer.top = 5 on the Dell S2725QC, U2718Q, VX2758 and LS32D70xE
+# (plus 20px sides/bottom on the LS32D70xE). Rift keys these by display UUID: plug the
+# monitor in, run `rift-cli query displays`, and replace the placeholder UUID.
+# [settings.layout.gaps.per_display."DELL-S2725QC-UUID".outer]
+# top = 5
+# left = 15
+# bottom = 15
+# right = 15
+
+# Workspace names in the menu bar, like the AeroSpace menu bar item
+[settings.ui.menu_bar]
+enabled = true
+# "label" draws workspace names; "layout" draws a small picture of each layout instead
+display_style = "label"
+active_label = "name"
+# "all" shows every workspace with the active one highlighted; "active" shows only the current one
+mode = "all"
+# Hide empty workspaces so the menu bar stays short
+show_empty = false
+# Show "resize" or "linux" while one of those modes is on
+show_binding_mode = true
+
+[settings.ui.mission_control]
+enabled = true
+fade_duration_ms = 50.0
+fade_enabled = true
+show_empty_workspaces = false
+window_previews = false
+
+[virtual_workspaces]
+enabled = true
+default_workspace_count = 12
+auto_assign_windows = true
+preserve_focus_per_workspace = true
+workspace_auto_back_and_forth = false
+prevent_wrapping = false
+reapply_app_rules_on_title_change = false
+workspace_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+workspace_rules = []
+
+app_rules = [
+  # Float IntelliJ dialogs so they don't steal focus from their popups
+  { app_id = "com.jetbrains.intellij", title_regex = "(Run/Debug|Configurations|Parameters|Arguments|Settings|Preferences|Environment Variables)", floating = true },
+  { app_id = "app.zen-browser.zen", title_substring = "Picture-in-Picture", floating = true },
+  # AeroSpace also floated app-id '15500', but Rift rejects the whole config for an app_id
+  # that isn't a bundle ID (com.example.app); add the real bundle ID here if you need it
+
+  # Every app opens in the workspace it's saved in (the rules above win for dialogs and PiP
+  # because they match on more fields). Workspace numbers are these + 1; layout.sh puts each
+  # workspace on its monitor: 1, 4, 10 on the Dell; 2, 11 on the Odyssey; 3, 9, 12 on the laptop.
+  { app_id = "com.jetbrains.intellij", workspace = 0 },
+  { app_id = "app.zen-browser.zen", workspace = 1 },
+  { app_id = "com.microsoft.teams2", workspace = 2 },
+  { app_id = "com.github.GitHubClient", workspace = 3 },
+  { app_id = "com.apple.Music", workspace = 8 },
+  { app_id = "net.kovidgoyal.kitty", workspace = 9 },
+  { app_id = "com.google.Chrome", workspace = 10 },
+  { app_id = "notion.id", workspace = 11 },
+]
+
+[modifier_combinations]
+comb1 = "Alt + Shift"
+
+[keys]
+"Alt + Enter" = { exec = ["/usr/bin/osascript", "-e", "tell application \"Kitty\" to do script", "-e", "tell application \"Kitty\" to activate"] }
+
+# i3-style focus and move
+"Alt + H" = { move_focus = "left" }
+"Alt + J" = { move_focus = "down" }
+"Alt + K" = { move_focus = "up" }
+"Alt + L" = { move_focus = "right" }
+
+"comb1 + H" = { move_node = "left" }
+"comb1 + J" = { move_node = "down" }
+"comb1 + K" = { move_node = "up" }
+"comb1 + L" = { move_node = "right" }
+
+"Alt + F" = "toggle_fullscreen"
+
+# AeroSpace accordion (alt-s/alt-w) is a stack in Rift; alt-e flips tile orientation
+"Alt + S" = "toggle_stack"
+"Alt + W" = "toggle_stack"
+"Alt + E" = "toggle_orientation"
+
+"Alt + V" = "toggle_window_floating"
+
+# Workspaces 1-12 (Rift counts from 0). Like i3/AeroSpace, a workspace shown on another
+# monitor is focused there instead of opening on this one (scripts/focus-workspace.sh)
+"Alt + 1" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "0"] }
+"Alt + 2" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "1"] }
+"Alt + 3" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "2"] }
+"Alt + 4" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "3"] }
+"Alt + 5" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "4"] }
+"Alt + 6" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "5"] }
+"Alt + 7" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "6"] }
+"Alt + 8" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "7"] }
+"Alt + 9" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "8"] }
+"Alt + 0" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "9"] }
+"Alt + Tab" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "10"] }
+"Alt + Backquote" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "11"] }
+
+# Move the window without following it, like move-node-to-workspace
+"comb1 + 1" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "0"] }
+"comb1 + 2" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "1"] }
+"comb1 + 3" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "2"] }
+"comb1 + 4" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "3"] }
+"comb1 + 5" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "4"] }
+"comb1 + 6" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "5"] }
+"comb1 + 7" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "6"] }
+"comb1 + 8" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "7"] }
+"comb1 + 9" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "8"] }
+"comb1 + 0" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "9"] }
+"comb1 + Tab" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "10"] }
+"comb1 + Backquote" = { exec = ["/Users/tristan/.config/rift/scripts/focus-workspace.sh", "--move", "11"] }
+
+# Move the workspace to a display (AeroSpace monitors 1/2/3 are Rift displays 0/1/2)
+"Alt + P" = { move_workspace_to_display = { selector = 1 } }
+"comb1 + P" = { move_workspace_to_display = { selector = 0 } }
+"Alt + Meta + P" = { move_workspace_to_display = { selector = 2 } }
+
+"comb1 + C" = "reload_config"
+"Alt + Z" = { binding_mode = "resize" }
+"comb1 + Z" = { binding_mode = "linux" }
+
+"Meta + Shift + R" = { exec = ["/bin/bash", "-c", "brew services restart borders"] }
+# New random Tokyo Night wallpaper on every monitor (~/.local/bin/wallpaper)
+"comb1 + W" = { exec = ["/Users/tristan/.local/bin/wallpaper", "tokyonight"] }
+# Save the current arrangement / put every window back into it (scripts/layout.sh)
+"comb1 + S" = { exec = ["/Users/tristan/.config/rift/scripts/layout.sh", "save"] }
+"comb1 + R" = { exec = ["/Users/tristan/.config/rift/scripts/layout.sh", "restore"] }
+
+# Binding modes must come after every [keys] entry (TOML scoping)
+[binding_modes.resize]
+"H" = { resize_window_shrink = "horizontal" }
+"J" = { resize_window_grow = "vertical" }
+"K" = { resize_window_shrink = "vertical" }
+"L" = { resize_window_grow = "horizontal" }
+"Alt + Shift + H" = { join_window = "left" }
+"Alt + Shift + J" = { join_window = "down" }
+"Alt + Shift + K" = { join_window = "up" }
+"Alt + Shift + L" = { join_window = "right" }
+"Enter" = { binding_mode = "default" }
+"Escape" = { binding_mode = "default" }
+
+# Hotkeys off (e.g. for a VM); Cmd+Shift+Alt+Enter turns them back on
+[binding_modes.linux]
+"Meta + Shift + Alt + Enter" = { binding_mode = "default" }
