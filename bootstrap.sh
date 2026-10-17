@@ -13,16 +13,24 @@ BACKUP="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 step() { printf '\n==> %s\n' "$1"; }
 
 step "Xcode command line tools"
-xcode-select -p >/dev/null 2>&1 || { xcode-select --install; read -rp "Press Enter once the install finishes... "; }
+if ! xcode-select -p >/dev/null 2>&1; then
+  xcode-select --install || true
+  echo "Finish the install in the window that opened; this continues on its own."
+  until xcode-select -p >/dev/null 2>&1; do sleep 5; done
+fi
+
+# A bundle path given relative to where the script was started
+[ -f "$REPO" ] && REPO="$(cd "$(dirname "$REPO")" && pwd)/$(basename "$REPO")"
 
 step "Dotfiles into ~ (branch $BRANCH)"
 cd "$HOME"
-if [ -d .git ]; then
-  echo "~/.git already exists; skipping the checkout"
+if [ "$(git symbolic-ref --short -q HEAD 2>/dev/null)" = "$BRANCH" ] && git rev-parse -q --verify HEAD >/dev/null; then
+  echo "Already checked out; skipping"
 else
-  git init -q
-  git remote add origin https://github.com/TeeJarr/mater-dotfiles.git
-  git fetch -q "$REPO" "$BRANCH:$BRANCH"
+  # Also picks up a run that stopped partway through
+  [ -d .git ] || git init -q
+  git remote get-url origin >/dev/null 2>&1 || git remote add origin https://github.com/TeeJarr/mater-dotfiles.git
+  git fetch -q "$REPO" "+$BRANCH:$BRANCH"
   # Back up anything the checkout would replace
   git ls-tree -r --name-only "$BRANCH" | while read -r f; do
     if [ -e "$f" ]; then mkdir -p "$BACKUP/$(dirname "$f")"; mv "$f" "$BACKUP/$f"; fi
