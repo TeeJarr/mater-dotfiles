@@ -1,6 +1,5 @@
 # Only overrides live here; everything else comes from Yazi's built-in defaults, so new
 # defaults (previewers, openers) arrive with upgrades. The old full copy is yazi.toml.bak.
-"$schema" = "https://yazi-rs.github.io/schemas/yazi.json"
 
 [mgr]
 ratio          = [ 1, 4, 3 ]

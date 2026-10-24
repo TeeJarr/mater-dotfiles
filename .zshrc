@@ -94,3 +94,4 @@ eval "$(starship init zsh)"
 
 # Syntax highlighting has to load last
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+export PATH="/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
